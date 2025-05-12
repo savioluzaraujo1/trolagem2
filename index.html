@@ -3,508 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel de Trollagem ESP32 v2</title><!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel de Trollagem ESP32 v2</title>
+  <title>Painel de Trollagem ESP32</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background-color: #1a202c; color: #e2e8f0; }
-    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    .alert { display: none; }
+    .container { max-width: 800px; margin: auto; padding: 20px; }
   </style>
 </head>
 <body>
-  <div class="container mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-6">Painel de Trollagem ESP32 v2</h1>
+  <div class="container">
+    <h1 class="text-3xl font-bold text-center mb-6">Painel de Trollagem ESP32</h1>
 
-    <!-- Configuração de Rede -->
-    <div id="configSection" class="mb-6 p-4 bg-gray-800 rounded-lg">
-      <h2 class="text-xl font-semibold mb-2">Configurações de Rede</h2>
-      <div class="grid grid-cols-1 gap-4">
-        <div>
-          <label class="block mb-1">Wi-Fi Fake (SSID)</label>
-          <input type="text" id="fakeSsid" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: WiFi_Gratis">
-        </div>
-        <div>
-          <label class="block mb-1">Senha Wi-Fi Fake</label>
-          <input type="text" id="fakePassword" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: 12345678">
-        </div>
-        <div>
-          <label class="block mb-1">Wi-Fi Real (SSID)</label>
-          <input type="text" id="realSsid" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: MinhaRede">
-        </div>
-        <div>
-          <label class="block mb-1">Senha Wi-Fi Real</label>
-          <input type="text" id="realPassword" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: MinhaSenha123">
-        </div>
-      </div>
-      <button onclick="saveConfig()" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded">Salvar Configurações</button>
-    </div>
+    <!-- Configurações -->
+    <section class="bg-gray-800 p-4 rounded mb-6">
+      <h2 class="text-xl font-semibold mb-2">Configuração de Wi-Fi</h2>
+      <input class="block w-full p-2 my-2 bg-gray-700 rounded" id="ssid" placeholder="SSID Fake">
+      <input class="block w-full p-2 my-2 bg-gray-700 rounded" id="password" placeholder="Senha Fake">
+      <input class="block w-full p-2 my-2 bg-gray-700 rounded" id="realssid" placeholder="SSID Real">
+      <input class="block w-full p-2 my-2 bg-gray-700 rounded" id="realpass" placeholder="Senha Real">
+      <button onclick="salvar()" class="w-full mt-2 bg-green-600 hover:bg-green-700 text-white p-2 rounded">Salvar</button>
+    </section>
 
-    <!-- Controle de Trollagens -->
-    <div id="trollSection" class="mb-6 p-4 bg-gray-800 rounded-lg">
-      <h2 class="text-xl font-semibold mb-2">Controle de Trollagens</h2>
-      <div class="grid grid-cols-1 gap-4">
-        <!-- Sons -->
-        <div>
-          <label class="block mb-1">Tocar Som</label>
-          <select id="soundSelect" class="w-full p-2 bg-gray-700 rounded text-white">
-            <option value="gemidao">Gemidão</option>
-            <option value="alarme">Alarme</option>
-            <option value="toque">Toque</option>
-          </select>
-          <button onclick="playSound()" class="mt-2 w-full bg-red-600 hover:bg-red-700 text-white p-2 rounded">Tocar</button>
-        </div>
-        <!-- BLE -->
-        <div>
-          <label class="block mb-1">Nome BLE Provocativo</label>
-          <input type="text" id="bleName" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: VocêFoiHackeado">
-          <button onclick="toggleBle(true)" class="mt-2 w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded">Ativar BLE</button>
-          <button onclick="toggleBle(false)" class="mt-2 w-full bg-gray-600 hover:bg-gray-700 text-white p-2 rounded">Desativar BLE</button>
-        </div>
-        <!-- Redirecionamento -->
-        <div>
-          <button onclick="redirectDevices()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded">Redirecionar para Pegadinha</button>
-        </div>
-      </div>
-    </div>
+    <!-- Sons -->
+    <section class="bg-gray-800 p-4 rounded mb-6">
+      <h2 class="text-xl font-semibold mb-2">Tocar Som</h2>
+      <select id="som" class="w-full p-2 bg-gray-700 rounded">
+        <option value="gemidao">Gemidão</option>
+        <option value="alarme">Alarme</option>
+        <option value="toque">Toque</option>
+      </select>
+      <button onclick="tocarSom()" class="w-full mt-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded">Tocar</button>
+    </section>
 
-    <!-- Dispositivos Conectados -->
-    <div id="devicesSection" class="mb-6 p-4 bg-gray-800 rounded-lg">
-      <h2 class="text-xl font-semibold mb-2">Dispositivos na Wi-Fi Fake</h2>
-      <ul id="deviceList" class="list-disc pl-5"></ul>
-      <button onclick="deauthAll()" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white p-2 rounded">Desautenticar Todos</button>
-    </div>
+    <!-- Redirecionamento -->
+    <section class="bg-gray-800 p-4 rounded mb-6">
+      <h2 class="text-xl font-semibold mb-2">Redirecionamento</h2>
+      <button onclick="redirecionar()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded">Forçar Pegadinha</button>
+    </section>
 
-    <!-- Dispositivos Detectados -->
-    <div id="scanSection" class="mb-6 p-4 bg-gray-800 rounded-lg">
-      <h2 class="text-xl font-semibold mb-2">Dispositivos em Redes Próximas</h2>
-      <ul id="scanList" class="list-disc pl-5"></ul>
-      <button onclick="scanNetworks()" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded">Escanear Redes</button>
-    </div>
-
-    <!-- Alerta -->
-    <div id="alert" class="alert p-4 bg-green-600 text-white rounded-lg">
-      <span id="alertMessage"></span>
-    </div>
-
-    <!-- Elemento de Áudio -->
-    <audio id="audioPlayer" style="display: none;">
-      <source id="audioSource" src="" type="audio/mpeg">
-    </audio>
+    <!-- Dispositivos -->
+    <section class="bg-gray-800 p-4 rounded mb-6">
+      <h2 class="text-xl font-semibold mb-2">Dispositivos Conectados</h2>
+      <ul id="lista"></ul>
+      <button onclick="desautenticarTodos()" class="w-full mt-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded">Desautenticar Todos</button>
+    </section>
   </div>
 
   <script>
-    const esp32Url = "http://192.168.4.1"; // Substitua pelo IP do ESP32
-    const audioUrls = {
-      gemidao: "./gemidao.mp3",
-      alarme: "./alarme.mp3",
-      toque: "./toque.mp3"
-    };
+    const baseUrl = "http://192.168.4.1";
 
-    function showAlert(message, isError = false) {
-      const alert = document.getElementById("alert");
-      alert.classList.remove("bg-green-600", "bg-red-600");
-      alert.classList.add(isError ? "bg-red-600" : "bg-green-600");
-      document.getElementById("alertMessage").textContent = message;
-      alert.style.display = "block";
-      setTimeout(() => alert.style.display = "none", 3000);
-    }
-
-    async function saveConfig() {
-      const config = {
-        fakeSsid: document.getElementById("fakeSsid").value,
-        fakePassword: document.getElementById("fakePassword").value,
-        realSsid: document.getElementById("realSsid").value,
-        realPassword: document.getElementById("realPassword").value
+    function salvar() {
+      const payload = {
+        fakeSsid: document.getElementById("ssid").value,
+        fakePassword: document.getElementById("password").value,
+        realSsid: document.getElementById("realssid").value,
+        realPassword: document.getElementById("realpass").value
       };
-      try {
-        const response = await fetch(`${esp32Url}/config`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(config)
-        });
-        if (response.ok) showAlert("Configurações salvas! Reiniciando...");
-        else showAlert("Erro ao salvar configurações!", true);
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
+      fetch(`${baseUrl}/config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(r => alert("Salvo com sucesso!"));
     }
 
-    async function playSound() {
-      const sound = document.getElementById("soundSelect").value;
-      const audioPlayer = document.getElementById("audioPlayer");
-      const audioSource = document.getElementById("audioSource");
-
-      // Reproduzir áudio no navegador
-      audioSource.src = audioUrls[sound];
-      audioPlayer.load();
-      audioPlayer.play().catch(err => showAlert("Erro ao tocar áudio no navegador!", true));
-
-      // Enviar comando ao ESP32
-      try {
-        const response = await fetch(`${esp32Url}/sound/play?type=${sound}`);
-        if (response.ok) showAlert(`Tocando ${sound} no ESP32!`);
-        else showAlert("Erro ao acionar som no ESP32!", true);
-      } catch (error) {
-        showAlert("Erro de conexão com o ESP32!", true);
-      }
+    function tocarSom() {
+      const tipo = document.getElementById("som").value;
+      fetch(`${baseUrl}/sound/play?type=${tipo}`);
     }
 
-    async function toggleBle(enable) {
-      const bleName = document.getElementById("bleName").value;
-      try {
-        const response = await fetch(`${esp32Url}/ble/${enable ? "on" : "off"}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: bleName })
-        });
-        if (response.ok) showAlert(`BLE ${enable ? "ativado" : "desativado"}!`);
-        else showAlert("Erro ao configurar BLE!", true);
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
+    function redirecionar() {
+      fetch(`${baseUrl}/redirect`);
     }
 
-    async function redirectDevices() {
-      try {
-        const response = await fetch(`${esp32Url}/redirect`);
-        if (response.ok) showAlert("Dispositivos redirecionados para a pegadinha!");
-        else showAlert("Erro ao redirecionar!", true);
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
-    }
-
-    async function loadDevices() {
-      try {
-        const response = await fetch(`${esp32Url}/devices`);
-        const devices = await response.json();
-        const deviceList = document.getElementById("deviceList");
-        deviceList.innerHTML = "";
-        devices.forEach(device => {
-          const li = document.createElement("li");
-          li.textContent = `MAC: ${device.mac} | IP: ${device.ip}`;
-          const btn = document.createElement("button");
-          btn.textContent = "Desautenticar";
-          btn.className = "ml-4 bg-red-600 hover:bg-red-700 text-white p-1 rounded";
-          btn.onclick = () => deauthDevice(device.mac);
-          li.appendChild(btn);
-          deviceList.appendChild(li);
-        });
-      } catch (error) {
-        showAlert("Erro ao carregar dispositivos!", true);
-      }
-    }
-
-    async function scanNetworks() {
-      try {
-        const response = await fetch(`${esp32Url}/scan`);
-        const devices = await response.json();
-        const scanList = document.getElementById("scanList");
-        scanList.innerHTML = "";
-        devices.forEach(device => {
-          const li = document.createElement("li");
-          li.textContent = `MAC: ${device.mac} | SSID: ${device.ssid || "Desconhecido"}`;
-          const btn = document.createElement("button");
-          btn.textContent = "Desautenticar";
-          btn.className = "ml-4 bg-red-600 hover:bg-red-700 text-white p-1 rounded";
-          btn.onclick = () => deauthDevice(device.mac);
-          li.appendChild(btn);
-          scanList.appendChild(li);
-        });
-      } catch (error) {
-        showAlert("Erro ao escanear redes!", true);
-      }
-    }
-
-    async function deauthDevice(mac) {
-      try {
-        const response = await fetch(`${esp32Url}/deauth?mac=${mac}`);
-        if (response.ok) showAlert(`Dispositivo ${mac} desautenticado!`);
-        else showAlert("Erro ao desautenticar!", true);
-        loadDevices();
-        scanNetworks();
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
-    }
-
-    async function deauthAll() {
-      try {
-        const response = await fetch(`${esp32Url}/deauth/all`);
-        if (response.ok) showAlert("Todos os dispositivos desautenticados!");
-        else showAlert("Erro ao desautenticar!", true);
-        loadDevices();
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
-    }
-
-    // Carregar dispositivos e redes ao iniciar
-    loadDevices();
-    scanNetworks();
-  </script>
-</body>
-</html>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { background-color: #1a202c; color: #e2e8f0; }
-    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    .alert { display: none; }
-  </style>
-</head>
-<body>
-  <div class="container mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-6">Painel de Trollagem ESP32 v2</h1>
-
-    <!-- Autenticação -->
-    <div class="mb-6 p-4 bg-gray-800 rounded-lg">
-      <h2 class="text-xl font-semibold mb-2">Autenticação</h2>
-      <input type="password" id="adminPassword" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Digite a senha do painel">
-      <button onclick="authenticate()" class="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded">Entrar</button>
-    </div>
-
-    <!-- Configuração de Rede -->
-    <div id="configSection" class="mb-6 p-4 bg-gray-800 rounded-lg hidden">
-      <h2 class="text-xl font-semibold mb-2">Configurações de Rede</h2>
-      <div class="grid grid-cols-1 gap-4">
-        <div>
-          <label class="block mb-1">Wi-Fi Fake (SSID)</label>
-          <input type="text" id="fakeSsid" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: WiFi_Gratis">
-        </div>
-        <div>
-          <label class="block mb-1">Senha Wi-Fi Fake</label>
-          <input type="text" id="fakePassword" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: 12345678">
-        </div>
-        <div>
-          <label class="block mb-1">Wi-Fi Real (SSID)</label>
-          <input type="text" id="realSsid" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: MinhaRede">
-        </div>
-        <div>
-          <label class="block mb-1">Senha Wi-Fi Real</label>
-          <input type="text" id="realPassword" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: MinhaSenha123">
-        </div>
-      </div>
-      <button onclick="saveConfig()" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded">Salvar Configurações</button>
-    </div>
-
-    <!-- Controle de Trollagens -->
-    <div id="trollSection" class="mb-6 p-4 bg-gray-800 rounded-lg hidden">
-      <h2 class="text-xl font-semibold mb-2">Controle de Trollagens</h2>
-      <div class="grid grid-cols-1 gap-4">
-        <!-- Sons -->
-        <div>
-          <label class="block mb-1">Tocar Som</label>
-          <select id="soundSelect" class="w-full p-2 bg-gray-700 rounded text-white">
-            <option value="gemidao">Gemidão</option>
-            <option value="alarme">Alarme</option>
-            <option value="toque">Toque</option>
-          </select>
-          <button onclick="playSound()" class="mt-2 w-full bg-red-600 hover:bg-red-700 text-white p-2 rounded">Tocar</button>
-        </div>
-        <!-- BLE -->
-        <div>
-          <label class="block mb-1">Nome BLE Provocativo</label>
-          <input type="text" id="bleName" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="Ex.: VocêFoiHackeado">
-          <button onclick="toggleBle(true)" class="mt-2 w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded">Ativar BLE</button>
-          <button onclick="toggleBle(false)" class="mt-2 w-full bg-gray-600 hover:bg-gray-700 text-white p-2 rounded">Desativar BLE</button>
-        </div>
-        <!-- Redirecionamento -->
-        <div>
-          <button onclick="redirectDevices()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded">Redirecionar para Pegadinha</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Dispositivos Conectados -->
-    <div id="devicesSection" class="mb-6 p-4 bg-gray-800 rounded-lg hidden">
-      <h2 class="text-xl font-semibold mb-2">Dispositivos na Wi-Fi Fake</h2>
-      <ul id="deviceList" class="list-disc pl-5"></ul>
-      <button onclick="deauthAll()" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white p-2 rounded">Desautenticar Todos</button>
-    </div>
-
-    <!-- Dispositivos Detectados -->
-    <div id="scanSection" class="mb-6 p-4 bg-gray-800 rounded-lg hidden">
-      <h2 class="text-xl font-semibold mb-2">Dispositivos em Redes Próximas</h2>
-      <ul id="scanList" class="list-disc pl-5"></ul>
-      <button onclick="scanNetworks()" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded">Escanear Redes</button>
-    </div>
-
-    <!-- Alerta -->
-    <div id="alert" class="alert p-4 bg-green-600 text-white rounded-lg">
-      <span id="alertMessage"></span>
-    </div>
-
-    <!-- Elemento de Áudio -->
-    <audio id="audioPlayer" style="display: none;">
-      <source id="audioSource" src="" type="audio/mpeg">
-    </audio>
-  </div>
-
-  <script>
-    const esp32Url = "http://192.168.4.1"; // Substitua pelo IP do ESP32
-    const audioUrls = {
-      gemidao: "https://example.com/audio/gemidao.mp3", // Substitua por URL real
-      alarme: "https://example.com/audio/alarme.mp3",   // Substitua por URL real
-      toque: "https://example.com/audio/toque.mp3"      // Substitua por URL real
-    };
-
-    function showAlert(message, isError = false) {
-      const alert = document.getElementById("alert");
-      alert.classList.remove("bg-green-600", "bg-red-600");
-      alert.classList.add(isError ? "bg-red-600" : "bg-green-600");
-      document.getElementById("alertMessage").textContent = message;
-      alert.style.display = "block";
-      setTimeout(() => alert.style.display = "none", 3000);
-    }
-
-    function authenticate() {
-      const password = document.getElementById("adminPassword").value;
-      if (password === "troll123") {
-        document.getElementById("configSection").classList.remove("hidden");
-        document.getElementById("trollSection").classList.remove("hidden");
-        document.getElementById("devicesSection").classList.remove("hidden");
-        document.getElementById("scanSection").classList.remove("hidden");
-        showAlert("Autenticado com sucesso!");
-        loadDevices();
-        scanNetworks();
-      } else {
-        showAlert("Senha incorreta!", true);
-      }
-    }
-
-    async function saveConfig() {
-      const config = {
-        fakeSsid: document.getElementById("fakeSsid").value,
-        fakePassword: document.getElementById("fakePassword").value,
-        realSsid: document.getElementById("realSsid").value,
-        realPassword: document.getElementById("realPassword").value
-      };
-      try {
-        const response = await fetch(`${esp32Url}/config`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(config)
-        });
-        if (response.ok) showAlert("Configurações salvas! Reiniciando...");
-        else showAlert("Erro ao salvar configurações!", true);
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
-    }
-
-    async function playSound() {
-      const sound = document.getElementById("soundSelect").value;
-      const audioPlayer = document.getElementById("audioPlayer");
-      const audioSource = document.getElementById("audioSource");
-      
-      // Reproduzir áudio no navegador
-      audioSource.src = audioUrls[sound];
-      audioPlayer.load();
-      audioPlayer.play().catch(err => showAlert("Erro ao tocar áudio no navegador!", true));
-
-      // Enviar comando ao ESP32
-      try {
-        const response = await fetch(`${esp32Url}/sound/play?type=${sound}`);
-        if (response.ok) showAlert(`Tocando ${sound}!`);
-        else showAlert("Erro ao acionar som no ESP32!", true);
-      } catch (error) {
-        showAlert("Erro de conexão com o ESP32!", true);
-      }
-    }
-
-    async function toggleBle(enable) {
-      const bleName = document.getElementById("bleName").value;
-      try {
-        const response = await fetch(`${esp32Url}/ble/${enable ? "on" : "off"}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: bleName })
-        });
-        if (response.ok) showAlert(`BLE ${enable ? "ativado" : "desativado"}!`);
-        else showAlert("Erro ao configurar BLE!", true);
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
-    }
-
-    async function redirectDevices() {
-      try {
-        const response = await fetch(`${esp32Url}/redirect`);
-        if (response.ok) showAlert("Dispositivos redirecionados para a pegadinha!");
-        else showAlert("Erro ao redirecionar!", true);
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
-    }
-
-    async function loadDevices() {
-      try {
-        const response = await fetch(`${esp32Url}/devices`);
-        const devices = await response.json();
-        const deviceList = document.getElementById("deviceList");
-        deviceList.innerHTML = "";
-        devices.forEach(device => {
-          const li = document.createElement("li");
-          li.textContent = `MAC: ${device.mac} | IP: ${device.ip}`;
-          const btn = document.createElement("button");
-          btn.textContent = "Desautenticar";
-          btn.className = "ml-4 bg-red-600 hover:bg-red-700 text-white p-1 rounded";
-          btn.onclick = () => deauthDevice(device.mac);
-          li.appendChild(btn);
-          deviceList.appendChild(li);
-        });
-      } catch (error) {
-        showAlert("Erro ao carregar dispositivos!", true);
-      }
-    }
-
-    async function scanNetworks() {
-      try {
-        const response = await fetch(`${esp32Url}/scan`);
-        const devices = await response.json();
-        const scanList = document.getElementById("scanList");
-        scanList.innerHTML = "";
-        devices.forEach(device => {
-          const li = document.createElement("li");
-          li.textContent = `MAC: ${device.mac} | SSID: ${device.ssid || "Desconhecido"}`;
-          const btn = document.createElement("button");
-          btn.textContent = "Desautenticar";
-          btn.className = "ml-4 bg-red-600 hover:bg-red-700 text-white p-1 rounded";
-          btn.onclick = () => deauthDevice(device.mac);
-          li.appendChild(btn);
-          scanList.appendChild(li);
-        });
-      } catch (error) {
-        showAlert("Erro ao escanear redes!", true);
-      }
-    }
-
-    async function deauthDevice(mac) {
-      try {
-        const response = await fetch(`${esp32Url}/deauth?mac=${mac}`);
-        if (response.ok) showAlert(`Dispositivo ${mac} desautenticado!`);
-        else showAlert("Erro ao desautenticar!", true);
-        loadDevices();
-        scanNetworks();
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
-    }
-
-    async function deauthAll() {
-      try {
-        const response = await fetch(`${esp32Url}/deauth/all`);
-        if (response.ok) showAlert("Todos os dispositivos desautenticados!");
-        else showAlert("Erro ao desautenticar!", true);
-        loadDevices();
-      } catch (error) {
-        showAlert("Erro de conexão!", true);
-      }
+    function desautenticarTodos() {
+      fetch(`${baseUrl}/deauth/all`).then(() => alert("Todos desautenticados!"));
     }
   </script>
 </body>
